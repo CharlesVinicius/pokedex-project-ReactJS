@@ -1,50 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-
-
-const Article = styled.article`
-    background: #F0F0F0;
-    width: 240px;
-    padding:40px;
-    margin-top:10px;
-    border-radius:50px;
-    display:flex;
-    display:inline-block;
-    align-items:center;
-    margin-left:10px;
-    box-shadow: 3px 3px 3px 1px rgba(0, 0, 0, 0.2);
-   
-`;
+import PokemonList from './PokemonList';
+import Pagination from './Pagination';
 
 const ReactApi =()=>{
-    const [user, setUser] = useState([])
+    const [pokemon, setPokemon] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [currentUrl, setCurrentUrl] = useState ('https://pokeapi.co/api/v2/pokemon')
+    const [nextPage, setNextPage] = useState()
+    const [previousPage, setPreviousPage] = useState()
+
 
     useEffect(()=>{
-        fetch('https://swapi.dev/api/people').then(response=>{
+        fetch(currentUrl).then(response=>{
         response.json().then(data=>{
-            setUser(data.results)
+            setPokemon(data.results)
+            console.log(data)
+            setLoading(false)
+            setNextPage(data.next)
+            setPreviousPage(data.previous)
+           
             })
         })
         
         .catch(err=>console.error('Ops, erro na requisição', err))
-    },[])
 
-    const renderData = (users, index) =>{
-        return(
-            <Article key={index}>
-                    <p><strong>Nome:</strong> {users.name}</p>
-                    <p><strong>Peso:</strong> {users.mass} Kg</p>
-                    <p><strong>Cor do cabelo:</strong> {users.hair_color}</p>
-                    <p><strong>gênero:</strong> {users.gender}</p>
-                    <p><strong>Aniversário:</strong> {users.birth_year}</p>
-            </Article>
-        )
+    },[currentUrl])
+
+
+    // Paginação
+    
+    function gotoNextPage(){
+        setCurrentUrl(nextPage)
+    }
+
+    function gotoPreviousPage(){
+        setCurrentUrl(previousPage)
     }
 
     return(
         <div>
-                {user.map(renderData)}
+            {loading ? <h1>Carregando...</h1> :(
+                <div>
+                    <PokemonList pokemon={pokemon}/>
+
+                    <Pagination gotoNextPage={gotoNextPage}
+                    gotoPreviousPage={gotoPreviousPage}/>
+                </div>
+            )}
         </div>
+            
     )
 }
 
